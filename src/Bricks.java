@@ -68,7 +68,7 @@ public class Bricks {
                     for (String code : codes) {
                         String[] freeBlocksArray = freeBlocks.stream().toArray(String[]::new);
                         if ((number) % 3 == 0) {
-                            if (freeBlocks.containsAll(codes)) {
+                            if (isContaining(codes, freeBlocks)) {
                                 freeBlocks.remove(code);
                                 blocksUsed1.add(code);
                                 if(nextCycleOfLoop == false) {
@@ -99,19 +99,22 @@ public class Bricks {
         System.out.println(unsuccessfulBuilds);
     }
 
-    static public boolean isContaining(String[] firstArray, String[] secondArray){
-        //firstArray ma byc codesArray a secondArray to freeBlocksArray
-        int counter = 0;
-        for(int i = 0; i < firstArray.length; i ++){
+    static public boolean isContaining(List<String> firstArray, List<String> secondArray){
+        //firstArray powinna byc codesArray a secondArray to freeBlocksArray
 
-            for(int j = 0; j < secondArray.length; i ++){
+        int counter = 0; //counter is then are the same values
 
-                if(firstArray[i] == secondArray[j]){
+        for(int i = 0; i < firstArray.size(); i ++){
+
+            for(int j = 0; j < secondArray.size(); j ++){
+
+                if(firstArray.get(i).equals(secondArray.get(j))){
+                 secondArray.remove(j);
                  counter++;
                  break;
                 }
             }
-            if(counter == firstArray.length)
+            if(counter == firstArray.size())
                 return true;
         }
         return false;
