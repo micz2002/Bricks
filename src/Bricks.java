@@ -4,20 +4,26 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class Bricks {
+
+    static int blocksMissing = 0;
+
     public static void main(String[] args) {
         List<String> freeBlocks = new ArrayList<>();
         Map<Integer, List<String>> instructions = new HashMap<>();
         List<String> blocksUsed1 = new ArrayList<>();
         List<String> blocksUsed2 = new ArrayList<>();
 
-        int blocksRemaining = 0 ;
-        int blocksMissing = 0;
+        int freeBlocksSizeAtStart = freeBlocks.size();
+        int blocksRemaining = 0;
         int successfulBuilds = 0;
         int unsuccessfulBuilds = 0;
 
+
+        double start = System.currentTimeMillis();
+
         File file = new File("plik.txt");
 
-        if(file.exists()) {
+        if (file.exists()) {
             if (file.canRead()) {
                 System.out.println("Wczytywanie danych z pliku");
                 Scanner dataFromFile = null;
@@ -33,6 +39,17 @@ public class Bricks {
                     String[] parts = line.split(":");
                     int number = Integer.parseInt(parts[0]);
                     String code = parts[1];
+                    String codeToCheck = code;
+
+                    String allowedLetters = "ABCDEFGHIJKLMNO";
+                    String allowedLettersInInstruction = "ABCDEFGHIJKLMN";
+
+                    int lineOK = 0;
+                    for (char letter : allowedLetters.toCharArray()) {
+                        if(code.contains(String.valueOf(letter))) {
+                            lineOK++;
+                        }
+                    }
                     //////Zliczanie i dodawanie klockow
                     if (number == 0) {
                         freeBlocks.add(code);
@@ -48,6 +65,7 @@ public class Bricks {
                     }
                     System.out.println(number + ":" + code);
                 }
+                dataFromFile.close();
 
                 System.out.println("///////////////////////////////////////////////");
                 System.out.println("WOLNE KLOCKI: ");
@@ -59,24 +77,57 @@ public class Bricks {
                     Integer number = entry.getKey();
                     List<String> codes = entry.getValue();
                     System.out.println("Klucz: " + number);
-                 //System.out.println("Wartosci: " + codes);
-
-                    String[] codesArray = codes.stream().toArray(String[]::new);
+                    //System.out.println("Wartosci: " + codes);
 
                     boolean nextCycleOfLoop = false;
+                    boolean containing = false;
 
                     for (String code : codes) {
-                        String[] freeBlocksArray = freeBlocks.stream().toArray(String[]::new);
+
                         if ((number) % 3 == 0) {
-                            if (isContaining(codes, freeBlocks)) {
+                            if (isContaining(codes, freeBlocks, nextCycleOfLoop, containing)) {
+                                containing = true;
+                                System.out.println("zawiera sie");
                                 freeBlocks.remove(code);
                                 blocksUsed1.add(code);
-                                if(nextCycleOfLoop == false) {
-                                    successfulBuilds++; }
-                            } else if(nextCycleOfLoop == false){
+                                if (nextCycleOfLoop == false) {
+                                    successfulBuilds++;
+                                }
+                            } else if (nextCycleOfLoop == false) {
+                                System.out.println("nie zawiera sie");
                                 unsuccessfulBuilds++;
                             }
                             //tu trzeba dodac dla pozostalych isntrukcji
+                        }
+                        nextCycleOfLoop = true;
+                    }
+
+                }
+                //////to samo ale dla instrukcji pozostalych nie dzielacych sie bez reszty prez 3
+                for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
+                    Integer number = entry.getKey();
+                    List<String> codes = entry.getValue();
+                    System.out.println("Klucz: " + number);
+                    //System.out.println("Wartosci: " + codes);
+
+                    boolean nextCycleOfLoop = false;
+                    boolean containing = false;
+
+                    for (String code : codes) {
+
+                        if ((number) % 3 != 0) {
+                            if (isContaining(codes, freeBlocks, nextCycleOfLoop, containing)) {
+                                containing = true;
+                                System.out.println("zawiera sie");
+                                freeBlocks.remove(code);
+                                blocksUsed2.add(code);
+                                if (nextCycleOfLoop == false) {
+                                    successfulBuilds++;
+                                }
+                            } else if (nextCycleOfLoop == false) {
+                                System.out.println("nie zawiera sie");
+                                unsuccessfulBuilds++;
+                            }
                         }
                         nextCycleOfLoop = true;
                     }
@@ -91,33 +142,55 @@ public class Bricks {
         for (String freeBlock : freeBlocks) {
             System.out.println(freeBlock);
         }
+        System.out.println("///////////////////////////////////////////////");
+        System.out.println("UZYTE KLOCKI: ");
+        for (String blockUsed1 : blocksUsed1) {
+            System.out.println(blockUsed1);
+        }
+        System.out.println("///////////////////////////////////////////////");
+
+        blocksRemaining = freeBlocks.size();
+
         System.out.println(blocksUsed1.size());
         System.out.println(blocksUsed2.size());
         System.out.println(blocksRemaining);
         System.out.println(blocksMissing);
         System.out.println(successfulBuilds);
         System.out.println(unsuccessfulBuilds);
+
+        System.out.println("CZAS WYKONANIA PROGRAMU: " + ((System.currentTimeMillis() - start) / 1000));
     }
 
-    static public boolean isContaining(List<String> firstArray, List<String> secondArray){
+    static public boolean isContaining(List<String> firstArray, List<String> secondArray, boolean nextCycleOfLoop, boolean containing) {
         //firstArray powinna byc codesArray a secondArray to freeBlocksArray
 
         int counter = 0; //counter is then are the same values
+        int counterPreviousValue = counter;
+        List<String> copyOfSecondArray = new ArrayList<>(secondArray);
 
-        for(int i = 0; i < firstArray.size(); i ++){
+        if (!containing) {
+            for (int i = 0; i < firstArray.size(); i++) {
 
-            for(int j = 0; j < secondArray.size(); j ++){
+                for (int j = 0; j < copyOfSecondArray.size(); j++) {
 
-                if(firstArray.get(i).equals(secondArray.get(j))){
-                 secondArray.remove(j);
-                 counter++;
-                 break;
+                    if (firstArray.get(i).equals(copyOfSecondArray.get(j))) {
+                        copyOfSecondArray.remove(j);
+                        counter++;
+                        break;
+                    }
                 }
+                if ((counter == counterPreviousValue) && nextCycleOfLoop == false) {
+                    blocksMissing++;
+                    System.out.println("BRAKUJACE KLOCKI: " + blocksMissing);
+                }
+                if (counter == firstArray.size())
+                    return true;
+
+                counterPreviousValue++;
             }
-            if(counter == firstArray.size())
-                return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }
 
