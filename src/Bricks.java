@@ -13,28 +13,28 @@ public class Bricks {
         List<String> blocksUsed1 = new ArrayList<>();
         List<String> blocksUsed2 = new ArrayList<>();
 
-        int freeBlocksSizeAtStart = freeBlocks.size();
         int blocksRemaining = 0;
         int successfulBuilds = 0;
         int unsuccessfulBuilds = 0;
 
-
-        double start = System.currentTimeMillis();
+        String allowedLetters = "ABCDEFGHIJKLMNO";
+        String allowedLettersInInstruction = "ABCDEFGHIJKLMN";
+        char[] allowedLettersCArray = allowedLetters.toCharArray();
+        char[] allowedLettersInInstructionCArray = allowedLettersInInstruction.toCharArray();
 
         File file = new File("plik.txt");
+        Scanner scanner = null;
 
         if (file.exists()) {
             if (file.canRead()) {
-                System.out.println("Wczytywanie danych z pliku");
-                Scanner dataFromFile = null;
                 try {
-                    dataFromFile = new Scanner(file);
+                    scanner = new Scanner(file);
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
 
-                while (dataFromFile.hasNextLine()) {
-                    String line = dataFromFile.nextLine();
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
 
                     int number = 0;
                     String code = null;
@@ -49,111 +49,97 @@ public class Bricks {
                         return;
                     }
 
-                    String allowedLetters = "ABCDEFGHIJKLMNO";
-                    String allowedLettersInInstruction = "ABCDEFGHIJKLMN";
-                    char[] allowedLettersCArray = allowedLetters.toCharArray();
-                    char[] allowedLettersInInstructionCArray = allowedLettersInInstruction.toCharArray();
-
-                    if(codeCArray.length != 4){
-                        System.out.println("klops");
+                    boolean lineOK = isLineOK(codeCArray, allowedLettersInInstructionCArray, allowedLettersCArray, number);
+                    if (!lineOK)
                         return;
-                    } else if (number != 0 && hasInstrUnpermittedLetter(codeCArray, allowedLettersInInstructionCArray)) {
-                        System.out.println("klops");
-                        return;
-                    } else if (hasInstrUnpermittedLetter(codeCArray, allowedLettersCArray)) {
-                        System.out.println("klops");
-                        return;
-                    }
 
-                    //////Zliczanie i dodawanie klockow
-                    if (number == 0) {
-                        freeBlocks.add(code);
-                    } else {
-                        if (instructions.containsKey(number)) {
-                            List<String> listOfCode = instructions.get(number);
-                            listOfCode.add(code);
-                        } else {
-                            List<String> listOfCode = new ArrayList<>();
-                            listOfCode.add(code);
-                            instructions.put(number, listOfCode);
-                        }
-                    }
+                    addingElements(instructions, freeBlocks, number, code);
                 }
-                dataFromFile.close();
 
-                System.out.println("///////////////////////////////////////////////");
-                System.out.println("WOLNE KLOCKI: ");
-                for (String freeBlock : freeBlocks) {
-                    System.out.println(freeBlock);
+            }
+        } else {
+            scanner = new Scanner(System.in);
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+
+                if (line.isBlank())
+                    break;
+
+                int number = 0;
+                String code = null;
+                char[] codeCArray = new char[0];
+                try {
+                    String[] parts = line.split(":");
+                    number = Integer.parseInt(parts[0]);
+                    code = parts[1];
+                    codeCArray = code.toCharArray();
+                } catch (NumberFormatException e) {
+                    System.out.println("klops");
+                    return;
                 }
-                ////////ZARZADZANIE INSTRUKCJAMI
-                for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
-                    Integer number = entry.getKey();
-                    List<String> codes = entry.getValue();
-                    System.out.println("Klucz: " + number);
-                    //System.out.println("Wartosci: " + codes);
 
-                    boolean nextCycleOfLoop = false;
-                    boolean containing = false;
+                boolean lineOK = isLineOK(codeCArray, allowedLettersInInstructionCArray, allowedLettersCArray, number);
+                if (!lineOK)
+                    return;
 
-                    for (String code : codes) {
+                addingElements(instructions, freeBlocks, number, code);
 
-                        if ((number) % 3 == 0) {
-                            if (isContaining(codes, freeBlocks, nextCycleOfLoop, containing)) {
-                                containing = true;
-                                System.out.println("zawiera sie");
-                                freeBlocks.remove(code);
-                                blocksUsed1.add(code);
-                                if (nextCycleOfLoop == false) {
-                                    successfulBuilds++;
-                                }
-                            } else if (nextCycleOfLoop == false) {
-                                System.out.println("nie zawiera sie");
-                                unsuccessfulBuilds++;
-                            }
-                            //tu trzeba dodac dla pozostalych isntrukcji
-                        }
-                        nextCycleOfLoop = true;
-                    }
-
-                }
-                //////to samo ale dla instrukcji pozostalych nie dzielacych sie bez reszty prez 3
-                for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
-                    Integer number = entry.getKey();
-                    List<String> codes = entry.getValue();
-
-                    //do wywalenia
-                    System.out.println("Klucz: " + number);
-
-                    boolean nextCycleOfLoop = false;
-                    boolean containing = false;
-
-                    for (String code : codes) {
-
-                        if ((number) % 3 != 0) {
-                            if (isContaining(codes, freeBlocks, nextCycleOfLoop, containing)) {
-                                containing = true;
-                                System.out.println("zawiera sie");
-                                freeBlocks.remove(code);
-                                blocksUsed2.add(code);
-                                if (nextCycleOfLoop == false) {
-                                    successfulBuilds++;
-                                }
-                            } else if (nextCycleOfLoop == false) {
-                                System.out.println("nie zawiera sie");
-                                unsuccessfulBuilds++;
-                            }
-                        }
-                        nextCycleOfLoop = true;
-                    }
-
-                }
-            }// else{
-//            //Wprowadz dane recznie, reszta programu taka sama
-//        }
+                if (line.isBlank())
+                    break;
+            }
         }
+        scanner.close();
 
-        System.out.println("///////////////////////////////////////////////");
+        for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
+            Integer number = entry.getKey();
+            List<String> codes = entry.getValue();
+
+            boolean nextCycleOfLoop = false;
+            boolean containing = false;
+
+            for (String code : codes) {
+
+                if ((number) % 3 == 0) {
+                    if (isContaining(codes, freeBlocks, nextCycleOfLoop, containing)) {
+                        containing = true;
+                        freeBlocks.remove(code);
+                        blocksUsed1.add(code);
+                        if (nextCycleOfLoop == false) {
+                            successfulBuilds++;
+                        }
+                    } else if (nextCycleOfLoop == false) {
+                        unsuccessfulBuilds++;
+                    }
+                }
+                nextCycleOfLoop = true;
+            }
+        }
+        //the same loop for number of instructions which are not divisible  by 3 without remainder
+        for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
+            Integer number = entry.getKey();
+            List<String> codes = entry.getValue();
+
+            boolean nextCycleOfLoop = false;
+            boolean containing = false;
+
+            for (String code : codes) {
+
+                if ((number) % 3 != 0) {
+                    if (isContaining(codes, freeBlocks, nextCycleOfLoop, containing)) {
+                        containing = true;
+                        freeBlocks.remove(code);
+                        blocksUsed2.add(code);
+                        if (nextCycleOfLoop == false) {
+                            successfulBuilds++;
+                        }
+                    } else if (nextCycleOfLoop == false) {
+                        unsuccessfulBuilds++;
+                    }
+                }
+                nextCycleOfLoop = true;
+            }
+        }
 
         blocksRemaining = freeBlocks.size();
 
@@ -163,18 +149,14 @@ public class Bricks {
         System.out.println(blocksMissing);
         System.out.println(successfulBuilds);
         System.out.println(unsuccessfulBuilds);
-
-        System.out.println("CZAS WYKONANIA PROGRAMU: " + ((System.currentTimeMillis() - start) / 1000));
     }
 
     static public boolean isContaining(List<String> firstList, List<String> secondList, boolean nextCycleOfLoop, boolean containing) {
-        //firstArray powinna byc codesArray a secondArray to freeBlocksArray
 
-        int counter = 0; //counter is then are the same values
-        int counterPreviousValue = counter;
+        int counter = 0;
         List<String> copyOfSecondList = new ArrayList<>(secondList);
 
-        boolean notContaining = false;
+        boolean notContaining = true;
 
         if (!containing) {
             for (int i = 0; i < firstList.size(); i++) {
@@ -189,18 +171,12 @@ public class Bricks {
                     }
                     notContaining = true;
                 }
-//                if ((counter == counterPreviousValue) && nextCycleOfLoop == false) {
-//                    blocksMissing++;
-//                    System.out.println("BRAKUJACE KLOCKI: " + blocksMissing);
-//                }
-                if(notContaining && nextCycleOfLoop == false){
+                if (notContaining && nextCycleOfLoop == false) {
                     blocksMissing++;
-                    System.out.println("BRAKUJACE KLOCKI: " + blocksMissing);
                 }
                 if (counter == firstList.size())
                     return true;
 
-                counterPreviousValue++;
             }
             return false;
         }
@@ -225,6 +201,35 @@ public class Bricks {
                 return true;
         }
         return false;
+    }
+
+    static public boolean isLineOK(char[] codeCArray, char[] allowedLettersInInstructionCArray, char[] allowedLettersCArray, int number) {
+        if (codeCArray.length != 4) {
+            System.out.println("klops");
+            return false;
+        } else if (number != 0 && hasInstrUnpermittedLetter(codeCArray, allowedLettersInInstructionCArray)) {
+            System.out.println("klops");
+            return false;
+        } else if (hasInstrUnpermittedLetter(codeCArray, allowedLettersCArray)) {
+            System.out.println("klops");
+            return false;
+        }
+        return true;
+    }
+
+    static public void addingElements(Map<Integer, List<String>> instructions, List<String> freeBlocks, int number, String code) {
+        if (number == 0) {
+            freeBlocks.add(code);
+        } else {
+            if (instructions.containsKey(number)) {
+                List<String> listOfCode = instructions.get(number);
+                listOfCode.add(code);
+            } else {
+                List<String> listOfCode = new ArrayList<>();
+                listOfCode.add(code);
+                instructions.put(number, listOfCode);
+            }
+        }
     }
 }
 
