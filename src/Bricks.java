@@ -36,20 +36,35 @@ public class Bricks {
                 while (dataFromFile.hasNextLine()) {
                     String line = dataFromFile.nextLine();
 
-                    String[] parts = line.split(":");
-                    int number = Integer.parseInt(parts[0]);
-                    String code = parts[1];
-                    String codeToCheck = code;
+                    int number = 0;
+                    String code = null;
+                    char[] codeCArray = new char[0];
+                    try {
+                        String[] parts = line.split(":");
+                        number = Integer.parseInt(parts[0]);
+                        code = parts[1];
+                        codeCArray = code.toCharArray();
+                    } catch (NumberFormatException e) {
+                        System.out.println("klops");
+                        return;
+                    }
 
                     String allowedLetters = "ABCDEFGHIJKLMNO";
                     String allowedLettersInInstruction = "ABCDEFGHIJKLMN";
+                    char[] allowedLettersCArray = allowedLetters.toCharArray();
+                    char[] allowedLettersInInstructionCArray = allowedLettersInInstruction.toCharArray();
 
-                    int lineOK = 0;
-                    for (char letter : allowedLetters.toCharArray()) {
-                        if(code.contains(String.valueOf(letter))) {
-                            lineOK++;
-                        }
+                    if(codeCArray.length != 4){
+                        System.out.println("klops");
+                        return;
+                    } else if (number != 0 && hasInstrUnpermittedLetter(codeCArray, allowedLettersInInstructionCArray)) {
+                        System.out.println("klops");
+                        return;
+                    } else if (hasInstrUnpermittedLetter(codeCArray, allowedLettersCArray)) {
+                        System.out.println("klops");
+                        return;
                     }
+
                     //////Zliczanie i dodawanie klockow
                     if (number == 0) {
                         freeBlocks.add(code);
@@ -63,7 +78,6 @@ public class Bricks {
                             instructions.put(number, listOfCode);
                         }
                     }
-                    System.out.println(number + ":" + code);
                 }
                 dataFromFile.close();
 
@@ -107,8 +121,9 @@ public class Bricks {
                 for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
                     Integer number = entry.getKey();
                     List<String> codes = entry.getValue();
+
+                    //do wywalenia
                     System.out.println("Klucz: " + number);
-                    //System.out.println("Wartosci: " + codes);
 
                     boolean nextCycleOfLoop = false;
                     boolean containing = false;
@@ -137,16 +152,7 @@ public class Bricks {
 //            //Wprowadz dane recznie, reszta programu taka sama
 //        }
         }
-        System.out.println("///////////////////////////////////////////////");
-        System.out.println("WOLNE KLOCKI: ");
-        for (String freeBlock : freeBlocks) {
-            System.out.println(freeBlock);
-        }
-        System.out.println("///////////////////////////////////////////////");
-        System.out.println("UZYTE KLOCKI: ");
-        for (String blockUsed1 : blocksUsed1) {
-            System.out.println(blockUsed1);
-        }
+
         System.out.println("///////////////////////////////////////////////");
 
         blocksRemaining = freeBlocks.size();
@@ -161,20 +167,20 @@ public class Bricks {
         System.out.println("CZAS WYKONANIA PROGRAMU: " + ((System.currentTimeMillis() - start) / 1000));
     }
 
-    static public boolean isContaining(List<String> firstArray, List<String> secondArray, boolean nextCycleOfLoop, boolean containing) {
+    static public boolean isContaining(List<String> firstList, List<String> secondList, boolean nextCycleOfLoop, boolean containing) {
         //firstArray powinna byc codesArray a secondArray to freeBlocksArray
 
         int counter = 0; //counter is then are the same values
         int counterPreviousValue = counter;
-        List<String> copyOfSecondArray = new ArrayList<>(secondArray);
+        List<String> copyOfSecondList = new ArrayList<>(secondList);
 
         if (!containing) {
-            for (int i = 0; i < firstArray.size(); i++) {
+            for (int i = 0; i < firstList.size(); i++) {
 
-                for (int j = 0; j < copyOfSecondArray.size(); j++) {
+                for (int j = 0; j < copyOfSecondList.size(); j++) {
 
-                    if (firstArray.get(i).equals(copyOfSecondArray.get(j))) {
-                        copyOfSecondArray.remove(j);
+                    if (firstList.get(i).equals(copyOfSecondList.get(j))) {
+                        copyOfSecondList.remove(j);
                         counter++;
                         break;
                     }
@@ -183,7 +189,7 @@ public class Bricks {
                     blocksMissing++;
                     System.out.println("BRAKUJACE KLOCKI: " + blocksMissing);
                 }
-                if (counter == firstArray.size())
+                if (counter == firstList.size())
                     return true;
 
                 counterPreviousValue++;
@@ -191,6 +197,26 @@ public class Bricks {
             return false;
         }
         return true;
+    }
+
+    static public boolean hasInstrUnpermittedLetter(char[] codeCArray, char[] allowedLCArray) {
+
+        boolean isUnpermittedLetter = false;
+
+        for (int i = 0; i < codeCArray.length; i++) {
+
+            for (int j = 0; j < allowedLCArray.length; j++) {
+
+                if (codeCArray[i] == allowedLCArray[j]) {
+                    isUnpermittedLetter = false;
+                    break;
+                }
+                isUnpermittedLetter = true;
+            }
+            if (isUnpermittedLetter)
+                return true;
+        }
+        return false;
     }
 }
 
