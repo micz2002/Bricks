@@ -85,8 +85,6 @@ public class Bricks {
 
                 addingElements(instructions, freeBlocks, number, code);
 
-                if (line.isBlank())
-                    break;
             }
         }
         scanner.close();
