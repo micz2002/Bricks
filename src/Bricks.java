@@ -174,6 +174,8 @@ public class Bricks {
         int counterPreviousValue = counter;
         List<String> copyOfSecondList = new ArrayList<>(secondList);
 
+        boolean notContaining = false;
+
         if (!containing) {
             for (int i = 0; i < firstList.size(); i++) {
 
@@ -182,10 +184,16 @@ public class Bricks {
                     if (firstList.get(i).equals(copyOfSecondList.get(j))) {
                         copyOfSecondList.remove(j);
                         counter++;
+                        notContaining = false;
                         break;
                     }
+                    notContaining = true;
                 }
-                if ((counter == counterPreviousValue) && nextCycleOfLoop == false) {
+//                if ((counter == counterPreviousValue) && nextCycleOfLoop == false) {
+//                    blocksMissing++;
+//                    System.out.println("BRAKUJACE KLOCKI: " + blocksMissing);
+//                }
+                if(notContaining && nextCycleOfLoop == false){
                     blocksMissing++;
                     System.out.println("BRAKUJACE KLOCKI: " + blocksMissing);
                 }
