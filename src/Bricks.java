@@ -22,42 +22,42 @@ public class Bricks {
         char[] allowedLettersCArray = allowedLetters.toCharArray();
         char[] allowedLettersInInstructionCArray = allowedLettersInInstruction.toCharArray();
 
-        File file = new File("plik.txt");
+//        File file = new File("plik.txt");
         Scanner scanner = null;
-
-        if (file.exists()) {
-            if (file.canRead()) {
-                try {
-                    scanner = new Scanner(file);
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-
-                    int number = 0;
-                    String code = null;
-                    char[] codeCArray = new char[0];
-                    try {
-                        String[] parts = line.split(":");
-                        number = Integer.parseInt(parts[0]);
-                        code = parts[1];
-                        codeCArray = code.toCharArray();
-                    } catch (NumberFormatException e) {
-                        System.out.println("klops");
-                        return;
-                    }
-
-                    boolean lineOK = isLineOK(codeCArray, allowedLettersInInstructionCArray, allowedLettersCArray, number);
-                    if (!lineOK)
-                        return;
-
-                    addingElements(instructions, freeBlocks, number, code);
-                }
-
-            }
-        } else {
+//
+//        if (file.exists()) {
+//            if (file.canRead()) {
+//                try {
+//                    scanner = new Scanner(file);
+//                } catch (FileNotFoundException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                while (scanner.hasNextLine()) {
+//                    String line = scanner.nextLine();
+//
+//                    int number = 0;
+//                    String code = null;
+//                    char[] codeCArray = new char[0];
+//                    try {
+//                        String[] parts = line.split(":");
+//                        number = Integer.parseInt(parts[0]);
+//                        code = parts[1];
+//                        codeCArray = code.toCharArray();
+//                    } catch (NumberFormatException e) {
+//                        System.out.println("klops");
+//                        return;
+//                    }
+//
+//                    boolean lineOK = isLineOK(codeCArray, allowedLettersInInstructionCArray, allowedLettersCArray, number);
+//                    if (!lineOK)
+//                        return;
+//
+//                    addingElements(instructions, freeBlocks, number, code);
+//                }
+//
+//            }
+//        } else {
             scanner = new Scanner(System.in);
 
             while (scanner.hasNextLine()) {
@@ -86,7 +86,7 @@ public class Bricks {
                 addingElements(instructions, freeBlocks, number, code);
 
             }
-        }
+      //  }
         scanner.close();
 
         for (Map.Entry<Integer, List<String>> entry : instructions.entrySet()) {
